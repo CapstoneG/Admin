@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Unit, Lesson, LessonType } from '@/types/admin';
+import { uploadService } from '@/services';
 import { FaPlus, FaEdit, FaTrash, FaArrowLeft, FaVideo, FaBook, FaComments, FaPencilAlt, FaLanguage, FaFileAlt, FaListOl, FaSpellCheck } from 'react-icons/fa';
 import '@/styles/admin/LessonManagement.css';
 
@@ -39,7 +40,13 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
   });
 
   const [videoData, setVideoData] = useState({ url: '', description: '', duration: 0 });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPublicId, setVideoPublicId] = useState<string | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
   const [vocabularies, setVocabularies] = useState<Array<{word: string, meaning: string, example: string, imageUrl: string}>>([]);
+  const [vocabImageFiles, setVocabImageFiles] = useState<{[key: number]: File | null}>({});
+  const [vocabImagePublicIds, setVocabImagePublicIds] = useState<{[key: number]: string}>({});
+  const [vocabImageUploading, setVocabImageUploading] = useState<{[key: number]: boolean}>({});
   const [dialogues, setDialogues] = useState<Array<{speaker: string, text: string}>>([]);
   const [grammarData, setGrammarData] = useState({
     topic: '',
@@ -57,6 +64,77 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
     type: ExerciseType,
     metadata: Array<{content: string, isCorrect: boolean}>
   }>>([]);
+
+  const uploadVideo = async (file: File) => {
+    setVideoUploading(true);
+    try {
+      const result = await uploadService.uploadVideo(file);
+      if (result) {
+        setVideoData({ ...videoData, url: result.url });
+        setVideoPublicId(result.publicId);
+        return result;
+      }
+    } catch (error: any) {
+      alert('Upload video failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
+  const deleteVideo = async (publicId: string) => {
+    try {
+      await uploadService.deleteVideo(publicId);
+      setVideoFile(null);
+      setVideoPublicId(null);
+      setVideoData({ ...videoData, url: '' });
+      const input = document.getElementById('video-upload') as HTMLInputElement;
+      if (input) input.value = '';
+    } catch (error: any) {
+      alert('Delete video failed: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  const uploadVocabImage = async (file: File, index: number) => {
+    setVocabImageUploading({...vocabImageUploading, [index]: true});
+    try {
+      const result = await uploadService.uploadImage(file);
+      if (result) {
+        const newVocabs = [...vocabularies];
+        newVocabs[index].imageUrl = result.url;
+        setVocabularies(newVocabs);
+        setVocabImagePublicIds({...vocabImagePublicIds, [index]: result.publicId});
+        return result;
+      }
+    } catch (error: any) {
+      alert('Upload image failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      const newUploading = {...vocabImageUploading};
+      delete newUploading[index];
+      setVocabImageUploading(newUploading);
+    }
+  };
+
+  const deleteVocabImage = async (publicId: string, index: number) => {
+    try {
+      await uploadService.deleteImage(publicId);
+      const newFiles = {...vocabImageFiles};
+      delete newFiles[index];
+      setVocabImageFiles(newFiles);
+      
+      const newPublicIds = {...vocabImagePublicIds};
+      delete newPublicIds[index];
+      setVocabImagePublicIds(newPublicIds);
+      
+      const newVocabs = [...vocabularies];
+      newVocabs[index].imageUrl = '';
+      setVocabularies(newVocabs);
+      
+      const input = document.getElementById(`vocab-image-${index}`) as HTMLInputElement;
+      if (input) input.value = '';
+    } catch (error: any) {
+      alert('Delete image failed: ' + (error.message || 'Unknown error'));
+    }
+  };
 
   const getLessonIcon = (type: LessonType | null) => {
     if (!type) return <FaBook />;
@@ -513,15 +591,71 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
               {contentSections.hasVideo && (
                 <div className="form-section">
                   <h3><FaVideo /> Video</h3>
+                  
+                  {/* File Upload */}
                   <div className="form-group">
-                    <label>URL</label>
-                    <input
-                      type="url"
-                      value={videoData.url}
-                      onChange={(e) => setVideoData({...videoData, url: e.target.value})}
-                      placeholder="https://youtube.com/abc"
-                    />
+                    <label>Upload Video</label>
+                    <div className="custom-file-upload">
+                      <input
+                        type="file"
+                        id="video-upload"
+                        accept="video/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setVideoFile(file);
+                            await uploadVideo(file);
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                        disabled={videoUploading}
+                      />
+                      {videoUploading ? (
+                        <div className="file-upload-area">
+                          <div className="upload-icon-wrapper">
+                            <div className="spinner-admin"></div>
+                          </div>
+                          <h4 className="upload-title">Uploading video...</h4>
+                          <p className="upload-subtitle">Please wait</p>
+                        </div>
+                      ) : !videoFile ? (
+                        <div className="file-upload-area">
+                          <div className="upload-icon-wrapper">
+                            <FaVideo className="upload-cloud-icon" />
+                          </div>
+                          <h4 className="upload-title">Choose a file or drag & drop it here</h4>
+                          <p className="upload-subtitle">MP4 formats, up to 30MB</p>
+                          <label htmlFor="video-upload" className="browse-file-btn">
+                            Browse File
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="file-selected">
+                          <FaVideo className="file-icon" />
+                          <div className="file-details">
+                            <p className="file-name">{videoFile.name}</p>
+                            <p className="file-size">{(videoFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                          </div>
+                          <button 
+                            type="button" 
+                            className="clear-file-btn"
+                            onClick={async () => {
+                              if (videoPublicId) {
+                                await deleteVideo(videoPublicId);
+                              } else {
+                                setVideoFile(null);
+                                const input = document.getElementById('video-upload') as HTMLInputElement;
+                                if (input) input.value = '';
+                              }
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
                   <div className="form-group">
                     <label>Mô tả</label>
                     <input
@@ -591,17 +725,68 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
                         />
                       </div>
                       <div className="form-group">
-                        <label>Image URL (optional)</label>
-                        <input
-                          type="url"
-                          value={vocab.imageUrl}
-                          onChange={(e) => {
-                            const newVocabs = [...vocabularies];
-                            newVocabs[index].imageUrl = e.target.value;
-                            setVocabularies(newVocabs);
-                          }}
-                          placeholder="https://..."
-                        />
+                        <label>Image (optional)</label>
+                        <div className="custom-file-upload">
+                          <input
+                            type="file"
+                            id={`vocab-image-${index}`}
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setVocabImageFiles({...vocabImageFiles, [index]: file});
+                                await uploadVocabImage(file, index);
+                              }
+                            }}
+                            style={{ display: 'none' }}
+                            disabled={vocabImageUploading[index]}
+                          />
+                          {vocabImageUploading[index] ? (
+                            <div className="file-upload-area compact">
+                              <div className="upload-icon-wrapper">
+                                <div className="spinner-admin"></div>
+                              </div>
+                              <h4 className="upload-title">Uploading image...</h4>
+                              <p className="upload-subtitle">Please wait</p>
+                            </div>
+                          ) : !vocabImageFiles[index] ? (
+                            <div className="file-upload-area compact">
+                              <div className="upload-icon-wrapper">
+                                <FaFileAlt className="upload-cloud-icon" />
+                              </div>
+                              <h4 className="upload-title">Choose an image or drag & drop it here</h4>
+                              <p className="upload-subtitle">JPG, PNG, GIF formats, up to 10MB</p>
+                              <label htmlFor={`vocab-image-${index}`} className="browse-file-btn">
+                                Browse File
+                              </label>
+                            </div>
+                          ) : (
+                            <div className="file-selected">
+                              <FaFileAlt className="file-icon" />
+                              <div className="file-details">
+                                <p className="file-name">{vocabImageFiles[index].name}</p>
+                                <p className="file-size">{(vocabImageFiles[index].size / 1024).toFixed(2)} KB</p>
+                              </div>
+                              <button 
+                                type="button" 
+                                className="clear-file-btn"
+                                onClick={async () => {
+                                  if (vocabImagePublicIds[index]) {
+                                    await deleteVocabImage(vocabImagePublicIds[index], index);
+                                  } else {
+                                    const newFiles = {...vocabImageFiles};
+                                    delete newFiles[index];
+                                    setVocabImageFiles(newFiles);
+                                    const input = document.getElementById(`vocab-image-${index}`) as HTMLInputElement;
+                                    if (input) input.value = '';
+                                  }
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <button
                         type="button"

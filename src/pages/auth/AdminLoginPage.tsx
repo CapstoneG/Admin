@@ -91,7 +91,7 @@ const AdminLoginPage: React.FC = () => {
           >
             {isLoading ? (
               <>
-                <span className="spinner"></span>
+                <span className="spinner-admin"></span>
                 Signing in...
               </>
             ) : (

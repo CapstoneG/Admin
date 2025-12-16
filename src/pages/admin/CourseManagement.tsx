@@ -18,7 +18,13 @@ const CourseManagement: React.FC<CourseManagementProps> = ({ onSelectCourse }) =
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/courses');
+      const token = localStorage.getItem('enghub_admin_token');
+      const response = await fetch('http://localhost:8080/api/v1/courses', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
       
       if (response.ok) {
         const data = await response.json();
