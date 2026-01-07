@@ -11,15 +11,17 @@ export interface Role {
 }
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
-  username: string;
-  fullName?: string;
-  avatar?: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+  level?: string;
+  status?: string;
+  provider?: string;
+  verified?: boolean;
+  lastLogin?: string;
   createdAt?: string;
-  updatedAt?: string;
-  isActive?: boolean;
-  role?: string;
   roles?: Role[];
 }
 
@@ -132,6 +134,12 @@ class AuthService {
         },
       });
 
+      if (!response.ok) {
+        throw {
+          message: 'Failed to get user info',
+          status: response.status,
+        } as ApiError;
+      }
 
       const userData = await response.json();
       return userData;
@@ -165,6 +173,44 @@ class AuthService {
   isAuthenticated(): boolean {
     const token = this.getToken();
     return !!token;
+  }
+
+  async updateUserStatus(userId: number, status: 'ACTIVE' | 'INACTIVE'): Promise<void> {
+    try {
+      const token = this.getToken();
+      
+      if (!token) {
+        throw {
+          message: 'No authentication token found',
+          status: 401,
+        } as ApiError;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/users/status/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw {
+          message: error || 'Failed to update user status',
+          status: response.status,
+        } as ApiError;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw {
+          message: 'Network error. Please check your connection.',
+          status: 0,
+        } as ApiError;
+      }
+      throw error;
+    }
   }
 }
 

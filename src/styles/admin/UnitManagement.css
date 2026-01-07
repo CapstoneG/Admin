@@ -31,7 +31,7 @@
 
 /* Course Banner */
 .course-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea 0%;
   border-radius: 24px;
   padding: 40px;
   margin-bottom: 40px;
@@ -112,7 +112,7 @@
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: #667eea 0%;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -137,7 +137,7 @@
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea 0%;
   color: white;
   display: flex;
   align-items: center;
@@ -180,7 +180,7 @@
   display: flex;
   gap: 20px;
   padding: 20px;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f3f4f6 100%);
+  background: #f8f9ff;
   border-radius: 14px;
   margin-bottom: 20px;
 }
@@ -195,7 +195,7 @@
   width: 44px;
   height: 44px;
   padding: 11px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea 0%;
   color: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
@@ -249,7 +249,7 @@
 }
 
 .action-btn.view {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea 0%;
   color: white;
   flex: 1;
   box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
@@ -468,7 +468,7 @@
 
 .unit-management .submit-btn {
   padding: 12px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea 0%;
   color: white;
   border: none;
   border-radius: 10px;

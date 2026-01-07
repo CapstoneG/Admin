@@ -1,35 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import '@/styles/admin/AdminDashboard.css';
-import { FaUsers, FaBook, FaChartLine, FaSignOutAlt, FaFileAlt, FaComments } from 'react-icons/fa';
+import { FaUsers, FaBook, FaChartLine, FaSignOutAlt, FaFileAlt, FaComments, FaLayerGroup, FaTrophy } from 'react-icons/fa';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { authService, type User } from '@/services/authService';
 import CourseManagement from './CourseManagement';
 import UnitManagement from './UnitManagement';
 import LessonManagement from './LessonManagement';
+import SkillManagement from './SkillManagement';
+import FlashcardManagement from './FlashcardManagement';
 import type { Unit, Course } from '@/types/admin';
 import logoImg from '@/assets/logo.png';
 
 interface Stats {
   totalUsers: number;
-  totalCourses: number;
   totalLessons: number;
+  totalSkills: number;
   activeUsers: number;
+  totalDeck: number;
 }
 
-interface UserRole {
-  name: string;
-}
+// Data example cho biểu đồ hoạt động gần đây
+const activityData = [
+  { name: 'T2', users: 320, lessons: 145, skills: 28 },
+  { name: 'T3', users: 450, lessons: 210, skills: 35 },
+  { name: 'T4', users: 380, lessons: 190, skills: 42 },
+  { name: 'T5', users: 520, lessons: 245, skills: 38 },
+  { name: 'T6', users: 490, lessons: 280, skills: 45 },
+  { name: 'T7', users: 610, lessons: 320, skills: 52 },
+  { name: 'CN', users: 580, lessons: 295, skills: 48 },
+];
 
-interface User {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  roles: UserRole[];
-  level: string;
-  status: string;
-  lastLogin: string;
-}
+// Data example cho khóa học phổ biến
+const popularCoursesData = [
+  { name: 'IELTS Foundation', students: 850, completion: 78 },
+  { name: 'TOEIC Basic', students: 720, completion: 82 },
+  { name: 'Business English', students: 650, completion: 75 },
+  { name: 'English Grammar', students: 580, completion: 88 },
+  { name: 'Pronunciation', students: 520, completion: 70 },
+  { name: 'Vocabulary Builder', students: 480, completion: 85 },
+];
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -37,14 +48,56 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+
+  const fetchCourseDetails = async (courseId: number) => {
+    try {
+      const token = localStorage.getItem('enghub_admin_token');
+      const response = await fetch(`http://localhost:8080/api/v1/courses/${courseId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.code === 0 && data.result) {
+          setSelectedCourse(data.result);
+          // If we're viewing a unit, update it too
+          if (selectedUnit) {
+            const updatedUnit = data.result.units.find((u: Unit) => u.id === selectedUnit.id);
+            if (updatedUnit) {
+              setSelectedUnit(updatedUnit);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching course details:', error);
+    }
+  };
+
+  const handleRefreshCourse = async () => {
+    if (selectedCourse) {
+      await fetchCourseDetails(selectedCourse.id);
+    }
+  };
+
+  const handleRefreshUnit = async () => {
+    if (selectedCourse) {
+      await fetchCourseDetails(selectedCourse.id);
+    }
+  };
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [userFilter, setUserFilter] = useState<'all' | 'admin' | 'user'>('all');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
-    totalCourses: 0,
     totalLessons: 0,
-    activeUsers: 0
+    totalSkills: 0,
+    activeUsers: 0,
+    totalDeck: 0
   });
 
   useEffect(() => {
@@ -76,10 +129,22 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchStats();
+    fetchCurrentUser();
     if (activeTab === 'users') {
       fetchUsers();
     }
   }, [activeTab]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const user = await authService.getCurrentUser();
+      if (user) {
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -107,11 +172,11 @@ const AdminDashboard: React.FC = () => {
       setFilteredUsers(users);
     } else if (filter === 'admin') {
       setFilteredUsers(users.filter(user => 
-        user.roles.some(role => role.name === 'ADMIN')
+        user.roles?.some(role => role.name === 'ADMIN') ?? false
       ));
     } else {
       setFilteredUsers(users.filter(user => 
-        user.roles.some(role => role.name === 'USER')
+        user.roles?.some(role => role.name === 'USER') ?? false
       ));
     }
   };
@@ -134,9 +199,10 @@ const AdminDashboard: React.FC = () => {
       // Mock data for demo
       setStats({
         totalUsers: 1250,
-        totalCourses: 24,
         totalLessons: 180,
-        activeUsers: 456
+        totalSkills: 45,
+        activeUsers: 456,
+        totalDeck: 68
       });
     }
   };
@@ -148,6 +214,21 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error('Logout error:', error);
       navigate('/admin/login');
+    }
+  };
+
+  const handleToggleUserStatus = async (userId: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const action = newStatus === 'ACTIVE' ? 'kích hoạt' : 'vô hiệu hóa';
+    
+    if (!confirm(`Bạn có chắc muốn ${action} người dùng này?`)) return;
+
+    try {
+      await authService.updateUserStatus(userId, newStatus);
+      // Refresh user list after status update
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error updating user status:', error);
     }
   };
 
@@ -187,6 +268,18 @@ const AdminDashboard: React.FC = () => {
             <FaBook /> Khóa học
           </button>
           <button
+            className={`nav-item ${activeTab === 'flashcard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('flashcard')}
+          >
+            <FaLayerGroup /> Flashcard
+          </button>
+          <button
+            className={`nav-item ${activeTab === 'skill' ? 'active' : ''}`}
+            onClick={() => setActiveTab('skill')}
+          >
+            <FaTrophy /> Skill
+          </button>
+          <button
             className={`nav-item ${activeTab === 'feedback' ? 'active' : ''}`}
             onClick={() => setActiveTab('feedback')}
           >
@@ -204,8 +297,14 @@ const AdminDashboard: React.FC = () => {
         <header className="admin-header">
           <h1>Bảng điều khiển quản trị</h1>
           <div className="admin-user">
-            <span>Xin chào, Admin</span>
-            <div className="admin-avatar">A</div>
+            <span>Xin chào, {currentUser ? `${currentUser.lastName}` : 'Admin'}</span>
+            <div className="admin-avatar">
+              {currentUser?.avatarUrl ? (
+                <img src={currentUser.avatarUrl} alt="Admin Avatar" />
+              ) : (
+                <img src="https://ui-avatars.com/api/?name=Admin&background=667eea&color=fff&size=128" alt="Admin Avatar" />
+              )}
+            </div>
           </div>
         </header>
 
@@ -225,24 +324,24 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="stat-card">
-                  <div className="stat-icon courses">
-                    <FaBook size={32} />
-                  </div>
-                  <div className="stat-info">
-                    <h3>Tổng khóa học</h3>
-                    <p className="stat-number">{stats.totalCourses}</p>
-                    <span className="stat-change positive">+2 khóa học mới</span>
-                  </div>
-                </div>
-
-                <div className="stat-card">
                   <div className="stat-icon lessons">
                     <FaFileAlt size={32} />
                   </div>
                   <div className="stat-info">
                     <h3>Tổng bài học</h3>
                     <p className="stat-number">{stats.totalLessons}</p>
-                    <span className="stat-change neutral">Ổn định</span>
+                    <span className="stat-change positive">+15 bài học mới</span>
+                  </div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-icon skills">
+                    <FaTrophy size={32} />
+                  </div>
+                  <div className="stat-info">
+                    <h3>Tổng kỹ năng</h3>
+                    <p className="stat-number">{stats.totalSkills}</p>
+                    <span className="stat-change positive">+5 kỹ năng mới</span>
                   </div>
                 </div>
 
@@ -256,16 +355,107 @@ const AdminDashboard: React.FC = () => {
                     <span className="stat-change positive">+8% hôm nay</span>
                   </div>
                 </div>
+
+                <div className="stat-card">
+                  <div className="stat-icon deck">
+                    <FaLayerGroup size={32} />
+                  </div>
+                  <div className="stat-info">
+                    <h3>Tổng bộ thẻ</h3>
+                    <p className="stat-number">{stats.totalDeck}</p>
+                    <span className="stat-change positive">+3 bộ thẻ mới</span>
+                  </div>
+                </div>
               </div>
 
               <div className="charts-section">
                 <div className="chart-card">
                   <h3>📊 Hoạt động gần đây</h3>
-                  <p className="placeholder">Biểu đồ thống kê người dùng theo thời gian</p>
+                  <div className="chart-wrapper">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={activityData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="name" stroke="#6b7280" />
+                        <YAxis stroke="#6b7280" />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                          }} 
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="users" 
+                          stroke="#667eea" 
+                          strokeWidth={3}
+                          name="Người dùng"
+                          dot={{ fill: '#667eea', r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="lessons" 
+                          stroke="#f5576c" 
+                          strokeWidth={3}
+                          name="Bài học"
+                          dot={{ fill: '#f5576c', r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="skills" 
+                          stroke="#f59e0b" 
+                          strokeWidth={3}
+                          name="Kỹ năng"
+                          dot={{ fill: '#f59e0b', r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
                 <div className="chart-card">
                   <h3>📈 Khóa học phổ biến</h3>
-                  <p className="placeholder">Biểu đồ khóa học được học nhiều nhất</p>
+                  <div className="chart-wrapper">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={popularCoursesData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis 
+                          dataKey="name" 
+                          stroke="#6b7280"
+                          angle={-15}
+                          textAnchor="end"
+                          height={80}
+                          fontSize={12}
+                        />
+                        <YAxis stroke="#6b7280" />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                          }} 
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey="students" 
+                          fill="#667eea" 
+                          name="Học viên"
+                          radius={[8, 8, 0, 0]}
+                        />
+                        <Bar 
+                          dataKey="completion" 
+                          fill="#10b981" 
+                          name="% Hoàn thành"
+                          radius={[8, 8, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             </div>
@@ -296,7 +486,6 @@ const AdminDashboard: React.FC = () => {
                       Học viên
                     </button>
                   </div>
-                  <button className="add-btn">+ Thêm người dùng</button>
                 </div>
               </div>
               
@@ -316,7 +505,7 @@ const AdminDashboard: React.FC = () => {
                   <tbody>
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((user) => {
-                        const isAdmin = user.roles.some(role => role.name === 'ADMIN');
+                        const isAdmin = user.roles?.some(role => role.name === 'ADMIN') ?? false;
                         const fullName = `${user.firstName} ${user.lastName}`;
                         const initial = user.firstName.charAt(0).toUpperCase();
                         
@@ -326,7 +515,11 @@ const AdminDashboard: React.FC = () => {
                             <td>
                               <div className="user-info">
                                 <div className={`user-avatar ${isAdmin ? 'admin-avatar' : ''}`}>
-                                  {initial}
+                                  {user.avatarUrl ? (
+                                    <img src={user.avatarUrl} alt={fullName} />
+                                  ) : (
+                                    <span className="avatar-initial">{initial}</span>
+                                  )}
                                 </div>
                                 <span>{fullName}</span>
                               </div>
@@ -347,15 +540,15 @@ const AdminDashboard: React.FC = () => {
                             </td>
                             <td>
                               <div className="action-buttons">
-                                <button className="action-btn edit" title="Sửa thông tin">
-                                  <span className="btn-text">Sửa</span>
-                                </button>
                                 <button 
-                                  className="action-btn delete" 
+                                  className={`action-btn ${user.status === 'ACTIVE' ? 'disable' : 'enable'}`}
+                                  onClick={() => handleToggleUserStatus(user.id, user.status || 'ACTIVE')}
                                   disabled={isAdmin}
-                                  title={isAdmin ? 'Không thể xóa admin' : 'Xóa người dùng'}
+                                  title={isAdmin ? 'Không thể thay đổi trạng thái admin' : (user.status === 'ACTIVE' ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản')}
                                 >
-                                  <span className="btn-text">Xóa</span>
+                                  <span className="btn-text">
+                                    {user.status === 'ACTIVE' ? 'Disable' : 'Active'}
+                                  </span>
                                 </button>
                               </div>
                             </td>
@@ -380,18 +573,28 @@ const AdminDashboard: React.FC = () => {
               {selectedUnit ? (
                 <LessonManagement 
                   unit={selectedUnit} 
-                  onBack={() => setSelectedUnit(null)} 
+                  onBack={() => setSelectedUnit(null)}
+                  onRefresh={handleRefreshUnit}
                 />
               ) : selectedCourse ? (
                 <UnitManagement 
                   course={selectedCourse}
                   onSelectUnit={setSelectedUnit}
                   onBack={() => setSelectedCourse(null)}
+                  onRefresh={handleRefreshCourse}
                 />
               ) : (
                 <CourseManagement onSelectCourse={setSelectedCourse} />
               )}
             </div>
+          )}
+
+          {activeTab === 'flashcard' && (
+            <FlashcardManagement />
+          )}
+
+          {activeTab === 'skill' && (
+            <SkillManagement />
           )}
 
           {activeTab === 'feedback' && (

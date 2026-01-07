@@ -90,6 +90,46 @@ class UploadService {
       throw error;
     }
   }
+
+  async uploadAudio(file: File): Promise<UploadVideoResponse | null> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://localhost:8080/api/v1/upload/audio', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data: ApiResponse<UploadVideoResponse> = await response.json();
+      
+      if (data.code === 0 && data.result) {
+        return data.result;
+      } else {
+        throw new Error(data.message || 'Upload audio failed');
+      }
+    } catch (error) {
+      console.error('Error uploading audio:', error);
+      throw error;
+    }
+  }
+
+  async deleteAudio(publicId: string): Promise<void> {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/upload/audio?publicId=${publicId}`, {
+        method: 'DELETE'
+      });
+
+      const data: ApiResponse<null> = await response.json();
+      
+      if (data.code !== 0) {
+        throw new Error(data.message || 'Delete audio failed');
+      }
+    } catch (error) {
+      console.error('Error deleting audio:', error);
+      throw error;
+    }
+  }
 }
 
 export const uploadService = new UploadService();

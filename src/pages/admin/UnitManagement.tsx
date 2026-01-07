@@ -7,31 +7,38 @@ interface UnitManagementProps {
   course: Course;
   onSelectUnit: (unit: Unit) => void;
   onBack: () => void;
+  onRefresh?: () => Promise<void>;
 }
 
-const UnitManagement: React.FC<UnitManagementProps> = ({ course, onSelectUnit, onBack }) => {
+const UnitManagement: React.FC<UnitManagementProps> = ({ course, onSelectUnit, onBack, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [formData, setFormData] = useState({
+    courseId: course.id,
     title: '',
     description: '',
-    orderIndex: 0
+    orderIndex: 0,
+    icon: 'FaBook'
   });
 
   const handleOpenModal = (unit?: Unit) => {
     if (unit) {
       setEditingUnit(unit);
       setFormData({
+        courseId: course.id,
         title: unit.title,
         description: unit.description,
-        orderIndex: unit.orderIndex
+        orderIndex: unit.orderIndex,
+        icon: 'FaBook'
       });
     } else {
       setEditingUnit(null);
       setFormData({
+        courseId: course.id,
         title: '',
         description: '',
-        orderIndex: course.units.length
+        orderIndex: course.units.length,
+        icon: 'FaBook'
       });
     }
     setIsModalOpen(true);
@@ -41,9 +48,11 @@ const UnitManagement: React.FC<UnitManagementProps> = ({ course, onSelectUnit, o
     setIsModalOpen(false);
     setEditingUnit(null);
     setFormData({
+      courseId: course.id,
       title: '',
       description: '',
-      orderIndex: 0
+      orderIndex: 0,
+      icon: 'FaBook'
     });
   };
 
@@ -54,7 +63,7 @@ const UnitManagement: React.FC<UnitManagementProps> = ({ course, onSelectUnit, o
       const token = localStorage.getItem('enghub_admin_token');
       const url = editingUnit 
         ? `http://localhost:8080/api/v1/units/${editingUnit.id}`
-        : `http://localhost:8080/api/v1/courses/${course.id}/units`;
+        : `http://localhost:8080/api/v1/units`;
       
       const method = editingUnit ? 'PUT' : 'POST';
 
@@ -68,8 +77,10 @@ const UnitManagement: React.FC<UnitManagementProps> = ({ course, onSelectUnit, o
       });
 
       if (response.ok) {
-        // Reload page or refresh data
-        window.location.reload();
+        handleCloseModal();
+        if (onRefresh) {
+          await onRefresh();
+        }
       }
     } catch (error) {
       console.error('Error saving unit:', error);
@@ -90,7 +101,9 @@ const UnitManagement: React.FC<UnitManagementProps> = ({ course, onSelectUnit, o
       });
 
       if (response.ok) {
-        window.location.reload();
+        if (onRefresh) {
+          await onRefresh();
+        }
       }
     } catch (error) {
       console.error('Error deleting unit:', error);

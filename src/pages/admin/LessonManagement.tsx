@@ -7,6 +7,7 @@ import '@/styles/admin/LessonManagement.css';
 interface LessonManagementProps {
   unit: Unit;
   onBack: () => void;
+  onRefresh?: () => Promise<void>;
 }
 
 type ExerciseType = 'TRANSLATE' | 'MULTIPLE_CHOICE' | 'FILL_BLANK' | 'LISTENING' | 'SPEAKING' | 'MATCH_PAIRS' | 'BUILD_SENTENCE' | 'SELECT_IMAGE' | 'TAP_WORD';
@@ -19,7 +20,7 @@ interface ContentSection {
   hasExercises: boolean;
 }
 
-const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => {
+const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   
@@ -28,7 +29,8 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
     orderIndex: 0,
     duration: 10,
     type: 'video' as LessonType,
-    content: ''
+    content: '',
+    studySkill: ''
   });
 
   const [contentSections, setContentSections] = useState<ContentSection>({
@@ -174,7 +176,8 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
         orderIndex: lesson.orderIndex,
         duration: lesson.duration,
         type: lesson.type || 'video',
-        content: lesson.content ? JSON.stringify(lesson.content, null, 2) : ''
+        content: lesson.content ? JSON.stringify(lesson.content, null, 2) : '',
+        studySkill: (lesson as any).studySkill || ''
       });
 
       // Reset all sections first
@@ -330,7 +333,8 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
         orderIndex: unit.lessons.length,
         duration: 10,
         type: 'video',
-        content: ''
+        content: '',
+        studySkill: ''
       });
       // Reset content sections
       setContentSections({
@@ -361,7 +365,8 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
       title: formData.title,
       orderIndex: formData.orderIndex,
       duration: formData.duration,
-      unitId: unit.id
+      unitId: unit.id,
+      studySkill: formData.studySkill
     };
 
     // Add optional content
@@ -403,7 +408,10 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
       });
 
       if (response.ok) {
-        window.location.reload();
+        handleCloseModal();
+        if (onRefresh) {
+          await onRefresh();
+        }
       } else {
         const error = await response.text();
         alert(`Có lỗi xảy ra: ${error}`);
@@ -425,7 +433,9 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
           'Authorization': `Bearer ${token}`
         }
       });
-      window.location.reload();
+      if (onRefresh) {
+        await onRefresh();
+      }
     } catch (error) {
       console.error('Error deleting lesson:', error);
       alert('Có lỗi xảy ra khi xóa lesson');
@@ -536,6 +546,22 @@ const LessonManagement: React.FC<LessonManagementProps> = ({ unit, onBack }) => 
                       min="1"
                       required
                     />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Study Skill (Kỹ năng học)</label>
+                    <select
+                      value={formData.studySkill}
+                      onChange={(e) => setFormData({ ...formData, studySkill: e.target.value })}
+                    >
+                      <option value="">Chọn kỹ năng</option>
+                      <option value="VOCAB">Vocabulary (Từ vựng)</option>
+                      <option value="GRAMMAR">Grammar (Ngữ pháp)</option>
+                      <option value="READING">Reading (Đọc hiểu)</option>
+                      <option value="LISTENING">Listening (Nghe hiểu)</option>
+                      <option value="SPEAKING">Speaking (Nói)</option>
+                      <option value="WRITING">Writing (Viết)</option>
+                    </select>
                   </div>
                 </div>
               </div>

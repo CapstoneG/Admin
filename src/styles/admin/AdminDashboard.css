@@ -7,7 +7,7 @@
 /* Sidebar */
 .admin-sidebar {
   width: 260px;
-  background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+  background: #1f2937;
   color: white;
   display: flex;
   flex-direction: column;
@@ -154,13 +154,20 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ece4e4;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
+  overflow: hidden;
+}
+
+.admin-avatar img {
+  width: 80%;
+  height: 80%;
+  object-fit: cover;
 }
 
 .admin-content {
@@ -177,8 +184,8 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
   margin-bottom: 32px;
 }
 
@@ -203,7 +210,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -218,15 +225,19 @@
 }
 
 .stat-card:nth-child(2)::before {
-  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+  background: #f5576c;
 }
 
 .stat-card:nth-child(3)::before {
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  background: #f59e0b;
 }
 
 .stat-card:nth-child(4)::before {
-  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  background: #38f9d7;
+}
+
+.stat-card:nth-child(5)::before {
+  background: #10b981;
 }
 
 .stat-icon {
@@ -246,27 +257,33 @@
 }
 
 .stat-icon.users {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
 }
 
-.stat-icon.courses {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+.stat-icon.lessons {
+  background: #667eea;
   color: white;
-  box-shadow: 0 8px 16px rgba(240, 147, 251, 0.3);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
 }
 
-.stat-icon.lessons {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+.stat-icon.skills {
+  background: #667eea;
   color: white;
-  box-shadow: 0 8px 16px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
 }
 
 .stat-icon.active {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: #65ada0;
   color: white;
-  box-shadow: 0 8px 16px rgba(67, 233, 123, 0.3);
+  box-shadow: 0 8px 16px rgba(56, 249, 215, 0.3);
+}
+
+.stat-icon.deck {
+  background: #667eea;
+  color: white;
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
 }
 
 .stat-info {
@@ -291,7 +308,7 @@
   font-weight: 800;
   color: #1f2937;
   line-height: 1;
-  background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+  background:  #1f2937 ;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -337,7 +354,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  min-height: 320px;
 }
 
 .chart-card:hover {
@@ -355,12 +371,30 @@
   gap: 8px;
 }
 
+.chart-wrapper {
+  margin-top: 16px;
+}
+
+.recharts-text {
+  font-size: 12px;
+  fill: #6b7280;
+}
+
+.recharts-legend-item-text {
+  color: #374151 !important;
+  font-weight: 500;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
 .placeholder {
   color: #9ca3af;
   text-align: center;
   padding: 60px 20px;
   font-size: 15px;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: #f9fafb;
   border-radius: 12px;
   border: 2px dashed #e5e7eb;
   font-weight: 500;
@@ -421,7 +455,7 @@
 
 .add-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #c2923a !important;
   color: white;
   border: none;
   border-radius: 12px;
@@ -476,7 +510,7 @@
 }
 
 .admin-table tbody tr.admin-row {
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  background: rgba(102, 126, 234, 0.05);
   border-left: 3px solid #667eea;
 }
 
@@ -487,23 +521,52 @@
 }
 
 .user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+  background: #dbeafe;
   color: #1e40af;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-avatar .avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .user-avatar.admin-avatar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #dbeafe;
   color: white;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.user-avatar.admin-avatar:hover {
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+  transform: scale(1.08);
 }
 
 .role-badge {
@@ -515,7 +578,7 @@
 }
 
 .role-badge.admin {
-  background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+  background: #ddd6fe;
   color: #6b21a8;
   border: 1px solid #a78bfa;
 }
@@ -584,28 +647,54 @@
 }
 
 .action-btn.edit {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  background: #dbeafe;
   border: 1px solid #93c5fd;
   color: #1e40af;
 }
 
 .action-btn.edit:hover:not(:disabled) {
-  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+  background: #93c5fd;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   color: white;
 }
 
 .action-btn.delete {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  background: #fee2e2;
   border: 1px solid #fca5a5;
   color: #991b1b;
 }
 
 .action-btn.delete:hover:not(:disabled) {
-  background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+  background: #fca5a5;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  color: white;
+}
+
+.action-btn.disable {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  color: #92400e;
+}
+
+.action-btn.disable:hover:not(:disabled) {
+  background: #fbbf24;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  color: white;
+}
+
+.action-btn.enable {
+  background: #d1fae5;
+  border: 1px solid #34d399;
+  color: #065f46;
+}
+
+.action-btn.enable:hover:not(:disabled) {
+  background: #34d399;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
   color: white;
 }
 
@@ -696,7 +785,7 @@
 
 .admin-dashboard .save-btn {
   padding: 12px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   border: none;
   border-radius: 12px;

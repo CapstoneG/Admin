@@ -1,0 +1,346 @@
+.speaking-edit-speaking {
+  padding: 24px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.header-speaking {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.back-btn-speaking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn-speaking:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.header-speaking h2 {
+  color: #111827;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.loading-speaking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* Form */
+.form-speaking {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-speaking {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.section-title-speaking {
+  color: #111827;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.section-header-speaking {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Form Grid */
+.form-grid-speaking {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form-group-speaking {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group-speaking.full-width-speaking {
+  grid-column: 1 / -1;
+}
+
+.form-group-speaking label {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.required-speaking {
+  color: #ef4444;
+}
+
+.form-group-speaking input[type="text"],
+.form-group-speaking select,
+.form-group-speaking textarea {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.form-group-speaking input:focus,
+.form-group-speaking select:focus,
+.form-group-speaking textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group-speaking textarea {
+  resize: vertical;
+}
+
+/* Media Upload */
+.media-upload-speaking {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-area-speaking {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  min-height: 150px;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-img-speaking {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.hidden-input-speaking {
+  display: none;
+}
+
+.upload-btn-speaking {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-btn-speaking:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* List Items */
+.list-speaking {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-item-speaking {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9fafb;
+}
+
+.item-header-speaking {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.item-number-speaking {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.remove-btn-speaking {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-btn-speaking:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.list-item-speaking input[type="text"],
+.list-item-speaking textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  font-family: inherit;
+}
+
+.list-item-speaking input:focus,
+.list-item-speaking textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Buttons */
+.add-btn-speaking {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-btn-speaking:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Form Actions */
+.form-actions-speaking {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn-speaking,
+.save-btn-speaking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn-speaking {
+  background: white;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.cancel-btn-speaking:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.save-btn-speaking {
+  background: #10b981;
+  color: white;
+}
+
+.save-btn-speaking:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.save-btn-speaking:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .form-grid-speaking {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .speaking-edit-speaking {
+    padding: 16px;
+  }
+
+  .section-speaking {
+    padding: 16px;
+  }
+
+  .header-speaking {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-actions-speaking {
+    flex-direction: column;
+  }
+
+  .cancel-btn-speaking,
+  .save-btn-speaking {
+    width: 100%;
+    justify-content: center;
+  }
+}
