@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '@/styles/admin/FlashcardManagement.css';
 import { FaPlus, FaArrowLeft, FaEdit, FaTrash, FaLayerGroup, FaBook } from 'react-icons/fa';
-import { flashcardService, type Deck, type Flashcard, type CreateDeckData, type CreateFlashcardData, type UpdateFlashcardData } from '@/services/flashcards';
+import { flashcardService, type Deck, type Flashcard, type CreateDeckData, type CreateFlashcardData } from '@/services/flashcards';
 
 const FlashcardManagement: React.FC = () => {
   const [view, setView] = useState<'decks' | 'flashcards'>('decks');

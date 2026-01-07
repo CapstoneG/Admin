@@ -21,26 +21,17 @@ interface Stats {
   totalDeck: number;
 }
 
-// Data example cho biểu đồ hoạt động gần đây
-const activityData = [
-  { name: 'T2', users: 320, lessons: 145, skills: 28 },
-  { name: 'T3', users: 450, lessons: 210, skills: 35 },
-  { name: 'T4', users: 380, lessons: 190, skills: 42 },
-  { name: 'T5', users: 520, lessons: 245, skills: 38 },
-  { name: 'T6', users: 490, lessons: 280, skills: 45 },
-  { name: 'T7', users: 610, lessons: 320, skills: 52 },
-  { name: 'CN', users: 580, lessons: 295, skills: 48 },
-];
+interface ActivityData {
+  name: string;
+  flashcards: number;
+  lessons: number;
+  skills: number;
+}
 
-// Data example cho khóa học phổ biến
-const popularCoursesData = [
-  { name: 'IELTS Foundation', students: 850, completion: 78 },
-  { name: 'TOEIC Basic', students: 720, completion: 82 },
-  { name: 'Business English', students: 650, completion: 75 },
-  { name: 'English Grammar', students: 580, completion: 88 },
-  { name: 'Pronunciation', students: 520, completion: 70 },
-  { name: 'Vocabulary Builder', students: 480, completion: 85 },
-];
+interface ActivityDataSkill {
+  name: string;
+  students: number;
+}
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -48,6 +39,8 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+  const [activityData, setActivityData] = useState<ActivityData[]>([]);
+  const [activityDataSkill, setActivityDataSkill] = useState<ActivityDataSkill[]>([]);
 
   const fetchCourseDetails = async (courseId: number) => {
     try {
@@ -184,7 +177,7 @@ const AdminDashboard: React.FC = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('enghub_admin_token');
-      const response = await fetch('http://localhost:8080/api/admin/stats', {
+      const response = await fetch('http://localhost:8080/api/admin/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -192,18 +185,20 @@ const AdminDashboard: React.FC = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setStats(data);
+        if (data.code === 0 && data.result) {
+          setStats({
+            totalUsers: data.result.totalUsers,
+            totalLessons: data.result.totalLessons,
+            totalSkills: data.result.totalSkills,
+            activeUsers: data.result.activeUsers,
+            totalDeck: data.result.totalDeck
+          });
+          setActivityData(data.result.activityData || []);
+          setActivityDataSkill(data.result.activityDataSkill || []);
+        }
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
-      // Mock data for demo
-      setStats({
-        totalUsers: 1250,
-        totalLessons: 180,
-        totalSkills: 45,
-        activeUsers: 456,
-        totalDeck: 68
-      });
+      console.error('Error fetching dashboard data:', error);
     }
   };
 
@@ -319,7 +314,6 @@ const AdminDashboard: React.FC = () => {
                   <div className="stat-info">
                     <h3>Tổng người dùng</h3>
                     <p className="stat-number">{stats.totalUsers.toLocaleString()}</p>
-                    <span className="stat-change positive">+12% so với tháng trước</span>
                   </div>
                 </div>
 
@@ -330,7 +324,6 @@ const AdminDashboard: React.FC = () => {
                   <div className="stat-info">
                     <h3>Tổng bài học</h3>
                     <p className="stat-number">{stats.totalLessons}</p>
-                    <span className="stat-change positive">+15 bài học mới</span>
                   </div>
                 </div>
 
@@ -341,18 +334,6 @@ const AdminDashboard: React.FC = () => {
                   <div className="stat-info">
                     <h3>Tổng kỹ năng</h3>
                     <p className="stat-number">{stats.totalSkills}</p>
-                    <span className="stat-change positive">+5 kỹ năng mới</span>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon active">
-                    <FaChartLine size={32} />
-                  </div>
-                  <div className="stat-info">
-                    <h3>Người dùng hoạt động</h3>
-                    <p className="stat-number">{stats.activeUsers}</p>
-                    <span className="stat-change positive">+8% hôm nay</span>
                   </div>
                 </div>
 
@@ -363,14 +344,23 @@ const AdminDashboard: React.FC = () => {
                   <div className="stat-info">
                     <h3>Tổng bộ thẻ</h3>
                     <p className="stat-number">{stats.totalDeck}</p>
-                    <span className="stat-change positive">+3 bộ thẻ mới</span>
+                  </div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-icon active">
+                    <FaChartLine size={32} />
+                  </div>
+                  <div className="stat-info">
+                    <h3>Người dùng hoạt động</h3>
+                    <p className="stat-number">{stats.activeUsers}</p>
                   </div>
                 </div>
               </div>
 
               <div className="charts-section">
                 <div className="chart-card">
-                  <h3>📊 Hoạt động gần đây</h3>
+                  <h3>Tổng thời gian học</h3>
                   <div className="chart-wrapper">
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={activityData}>
@@ -388,10 +378,10 @@ const AdminDashboard: React.FC = () => {
                         <Legend />
                         <Line 
                           type="monotone" 
-                          dataKey="users" 
+                          dataKey="flashcards" 
                           stroke="#667eea" 
                           strokeWidth={3}
-                          name="Người dùng"
+                          name="Flashcards"
                           dot={{ fill: '#667eea', r: 4 }}
                           activeDot={{ r: 6 }}
                         />
@@ -418,10 +408,10 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="chart-card">
-                  <h3>📈 Khóa học phổ biến</h3>
+                  <h3>Hoạt động theo kỹ năng</h3>
                   <div className="chart-wrapper">
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={popularCoursesData}>
+                      <BarChart data={activityDataSkill}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis 
                           dataKey="name" 
@@ -445,12 +435,6 @@ const AdminDashboard: React.FC = () => {
                           dataKey="students" 
                           fill="#667eea" 
                           name="Học viên"
-                          radius={[8, 8, 0, 0]}
-                        />
-                        <Bar 
-                          dataKey="completion" 
-                          fill="#10b981" 
-                          name="% Hoàn thành"
                           radius={[8, 8, 0, 0]}
                         />
                       </BarChart>
