@@ -63,6 +63,11 @@ export interface UpdateFlashcardData {
   studySkill?: string;
 }
 
+export interface GenerateFlashcardsData {
+  deckId: number;
+  words: string[];
+}
+
 export interface SubmitStudyData {
   cardId: number;
   quality: number;
@@ -325,6 +330,38 @@ class FlashcardService {
         const errorData = await response.json().catch(() => ({}));
         throw {
           message: errorData.message || 'Failed to delete flashcard',
+          status: response.status,
+        } as ApiError;
+      }
+    } catch (error) {
+      if (error && typeof error === 'object' && 'status' in error) {
+        throw error;
+      }
+      if (error instanceof Error) {
+        throw {
+          message: 'Network error. Please check your connection.',
+          status: 0,
+        } as ApiError;
+      }
+      throw {
+        message: 'An unexpected error occurred',
+        status: 500,
+      } as ApiError;
+    }
+  }
+
+  async generateFlashcards(data: GenerateFlashcardsData): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/generate-flashcards`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw {
+          message: errorData.message || 'Failed to generate flashcards',
           status: response.status,
         } as ApiError;
       }

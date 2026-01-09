@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '@/styles/admin/FlashcardManagement.css';
-import { FaPlus, FaArrowLeft, FaEdit, FaTrash, FaLayerGroup, FaBook } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaEdit, FaTrash, FaLayerGroup, FaBook, FaMagic } from 'react-icons/fa';
 import { flashcardService, type Deck, type Flashcard, type CreateDeckData, type CreateFlashcardData } from '@/services/flashcards';
 
 const FlashcardManagement: React.FC = () => {
@@ -13,7 +13,10 @@ const FlashcardManagement: React.FC = () => {
   // Modal states
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showFlashcardModal, setShowFlashcardModal] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [editingFlashcard, setEditingFlashcard] = useState<Flashcard | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [wordsInput, setWordsInput] = useState('');
   
   // Form states
   const [deckForm, setDeckForm] = useState<CreateDeckData>({ name: '', description: '' });
@@ -179,6 +182,53 @@ const FlashcardManagement: React.FC = () => {
     }
   };
 
+  const handleGenerateFlashcards = async () => {
+    // Tách từ theo dấu phẩy hoặc xuống dòng
+    const words = wordsInput
+      .split(/[,\n]/)
+      .map(w => w.trim())
+      .filter(w => w.length > 0);
+
+    // Validation
+    if (words.length === 0) {
+      alert('Vui lòng nhập ít nhất 1 từ vựng');
+      return;
+    }
+
+    if (words.length > 10) {
+      alert('Chỉ được nhập tối đa 10 từ');
+      return;
+    }
+
+    if (!selectedDeck) {
+      alert('Vui lòng chọn deck');
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      await flashcardService.generateFlashcards({
+        deckId: selectedDeck.id,
+        words: words
+      });
+      alert(`Đang tạo flashcards cho ${words.length} từ. Vui lòng đợi trong giây lát...`);
+      setShowGenerateModal(false);
+      setWordsInput('');
+      // Đợi 2 giây rồi refresh lại danh sách
+      setTimeout(() => {
+        if (selectedDeck) {
+          fetchFlashcards(selectedDeck.id);
+          fetchDecks();
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('Error generating flashcards:', error);
+      alert('Không thể tạo flashcards');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="flashcard-management">
       {view === 'decks' ? (
@@ -237,9 +287,14 @@ const FlashcardManagement: React.FC = () => {
               <FaArrowLeft /> Quay lại
             </button>
             <h2>{selectedDeck?.name}</h2>
-            <button className="add-btn" onClick={() => handleOpenFlashcardModal()}>
-              <FaPlus /> Thêm Flashcard
-            </button>
+            <div className="header-actions">
+              <button className="generate-btn" onClick={() => setShowGenerateModal(true)}>
+                <FaMagic /> Tạo tự động
+              </button>
+              <button className="add-btn" onClick={() => handleOpenFlashcardModal()}>
+                <FaPlus /> Thêm Flashcard
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -418,6 +473,53 @@ const FlashcardManagement: React.FC = () => {
               </button>
               <button className="btn-save" onClick={handleSaveFlashcard}>
                 {editingFlashcard ? 'Cập nhật' : 'Thêm mới'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generate Flashcards Modal */}
+      {showGenerateModal && (
+        <div className="modal-overlay" onClick={() => setShowGenerateModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><FaMagic /> Tạo Flashcards Tự Động</h3>
+              <button className="close-btn" onClick={() => setShowGenerateModal(false)}>
+                X
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label htmlFor="words-input">Từ vựng <span className="required">*</span></label>
+                <textarea
+                  id="words-input"
+                  className="form-textarea"
+                  placeholder="Nhập từ vựng (mỗi từ cách nhau bởi dấu phẩy hoặc xuống dòng)"
+                  value={wordsInput}
+                  onChange={(e) => setWordsInput(e.target.value)}
+                  rows={8}
+                  autoFocus
+                />
+                <small className="form-hint">
+                  Bạn có thể nhập nhiều từ, phân cách bằng dấu phẩy hoặc xuống dòng (Tối đa 10 từ)
+                </small>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn-cancel" 
+                onClick={() => setShowGenerateModal(false)}
+                disabled={isGenerating}
+              >
+                Hủy
+              </button>
+              <button 
+                className="btn-save" 
+                onClick={handleGenerateFlashcards}
+                disabled={isGenerating}
+              >
+                {isGenerating ? 'Đang tạo...' : 'Tạo Flashcards'}
               </button>
             </div>
           </div>
